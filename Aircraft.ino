@@ -14,10 +14,19 @@
 
 extern Adafruit_ST7789 tft;
 
-const char* ssid     = "ATTYSwThfR";
-const char* password = "wttpvirm=yt3";
+const char* OPENSKY_CLIENT_ID  =
+    "clientid";
+
+const char* OPENSKY_CLIENT_SECRET  =
+    "secret";
+
+const char* ssid     = "ssid";
+const char* password = "password";
 
 unsigned long lastDebugPrint = 0;
+
+String accessToken;
+unsigned long tokenExpires = 0;
 
 int brightnessLevel = 4;
 
@@ -66,13 +75,84 @@ struct Aircraft
 Aircraft planes[MAX_PLANES];
 int planeCount = 0;
 
-const float HOME_LAT = 32.677919;
-const float HOME_LON = -96.654376;
+const float HOME_LAT = 37.241283;
+const float HOME_LON = -115.814593;
 
 const float BOX_LAT = 0.1448;
 const float BOX_LON = 0.1724;
 
 const float RADAR_RANGE = 10.0f;
+
+//==================================================
+
+bool fetchAccessToken()
+{
+    WiFiClientSecure client;
+    client.setInsecure();
+
+    HTTPClient http;
+
+    String url =
+        "https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token";
+
+    if(!http.begin(client, url))
+        return false;
+
+    http.addHeader(
+        "Content-Type",
+        "application/x-www-form-urlencoded");
+
+    String body =
+        "grant_type=client_credentials"
+        "&client_id=" +
+        String(OPENSKY_CLIENT_ID)
+        +
+        "&client_secret=" +
+        String(OPENSKY_CLIENT_SECRET);
+
+    int code =
+        http.POST(body);
+
+    if(code != 200)
+    {
+        Serial.printf(
+            "Token HTTP=%d\n",
+            code);
+
+        http.end();
+        return false;
+    }
+
+    String payload =
+        http.getString();
+
+    http.end();
+
+    JsonDocument doc;
+
+    if(deserializeJson(
+           doc,
+           payload))
+    {
+        return false;
+    }
+
+    accessToken =
+        doc["access_token"]
+        .as<String>();
+
+    int expires =
+        doc["expires_in"]
+        .as<int>();
+
+    tokenExpires =
+        millis()
+        +
+        ((unsigned long)expires
+         * 1000UL);
+
+    return true;
+}
 
 //==================================================
 
@@ -278,6 +358,21 @@ void sortPlanes()
 
 void fetchAircraft()
 {
+  if(
+        accessToken.length() == 0
+        ||
+        millis() >
+        tokenExpires - 60000)
+    {
+        if(!fetchAccessToken())
+        {
+            Serial.println(
+                "Token Failed");
+
+            return;
+        }
+    }
+
     planeCount = 0;
 
     if (WiFi.status() !=
@@ -317,6 +412,10 @@ void fetchAircraft()
     {
         return;
     }
+    
+    http.addHeader(
+        "Authorization",
+        "Bearer " + accessToken);
 
     int code =
         http.GET();
@@ -791,8 +890,8 @@ void drawRadarScreen()
 
     drawText("N", 65, 8, ST77XX_WHITE, 1);
     drawText("S", 65, 134, ST77XX_WHITE, 1);
-    drawText("W", 4, 70, ST77XX_WHITE, 1);
-    drawText("E", 126, 70, ST77XX_WHITE, 1);
+    drawText("W", 3, 71, ST77XX_WHITE, 1);
+    drawText("E", 127, 71, ST77XX_WHITE, 1);
 
     // HOME POSITION
 
@@ -1102,7 +1201,7 @@ unsigned long lastBarUpdate = 0;
 unsigned long lastScreenUpdate = 0;
 
 const unsigned long UPDATE_INTERVAL =
-    90000UL;
+    5000UL;
 
 //==================================================
 
