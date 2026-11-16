@@ -12,11 +12,11 @@ Designed for inexpensive ESP32 display modules such as the Tenstar ESP32 Display
 
 ### Radar View
 
-![Radar View](radar.jpg)
+![Radar View](screenshots/radar.jpg)
 
 ### List View
 
-![List View](list.jpg)
+![List View](screenshots/list.jpg)
 
 ---
 
