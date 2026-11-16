@@ -1,8 +1,22 @@
 # ESP32 Flight Radar
 
-A portable flight radar built on an ESP32 and ST7789 display using live aircraft data from the OpenSky Network.
+A portable real-time aircraft radar built on an ESP32 and ST7789 display using live aircraft data from the OpenSky Network.
 
-This project displays nearby aircraft in either a traditional list view or a radar-style view, showing distance, altitude, speed, heading, and movement history. The project was designed for inexpensive ESP32 display boards such as the T-Display and Tenstar ESP32 modules.
+The project displays nearby aircraft in both a traditional aircraft list view and a radar-style tactical display. Aircraft are plotted relative to your location and include heading, altitude, speed, distance, directional vectors, and historical movement trails.
+
+Designed for inexpensive ESP32 display modules such as the Tenstar ESP32 Display Board and LilyGO T-Display style hardware.
+
+---
+
+## Screenshots
+
+### Radar View
+
+![Radar View](radar.jpg)
+
+### List View
+
+![List View](list.jpg)
 
 ---
 
@@ -11,41 +25,52 @@ This project displays nearby aircraft in either a traditional list view or a rad
 ### Aircraft Tracking
 
 - Live aircraft data from OpenSky Network
-- Automatic refresh interval
-- Sort aircraft by nearest distance
+- OAuth2 authentication support
+- Automatic refresh scheduling
+- Manual refresh capability
+- Aircraft sorting by nearest distance
 - Callsign display
 - Altitude display
 - Ground speed display
 - Heading display
 
-### Radar View
+### Radar Display
 
 - 10-mile radar range
-- Radar scope with compass directions
-- Bearing calculation
-- Aircraft location plotting
-- Altitude-based color coding
-- Nearest aircraft highlighting
+- Aircraft plotted by real-world bearing and distance
+- Compass overlay
+- Home position marker
+- Directional aircraft vector symbols
+- Aircraft movement trails
+- Closest-aircraft highlighting
 - Aircraft labels
-- Directional aircraft symbols
-- Historical movement trails
+- Altitude-based color coding
 
-### List View
+### Aircraft List View
 
-- Up to five nearest aircraft
-- Distance
+- Five nearest aircraft
+- Distance from home location
 - Altitude
 - Speed
 - Heading
+- Callsign
 
-### Device Features
+### Power Management
 
 - Battery monitoring
-- Battery icon indicator
-- Adjustable backlight brightness
+- Battery icon display
+- Adjustable brightness levels
 - Deep sleep mode
-- Wi-Fi auto-connect
-- Portable operation
+- Button wake-up
+- Low-power operation
+
+### User Interface
+
+- Radar mode
+- Aircraft list mode
+- Update progress indicator
+- Battery status indicator
+- Physical button controls
 
 ---
 
@@ -53,10 +78,10 @@ This project displays nearby aircraft in either a traditional list view or a rad
 
 ### Tested Hardware
 
-- ESP32 Development Board
-- ESP32 T-Display
+- ESP32 Dev Module
 - Tenstar ESP32 Display Board
-- ST7789 135x240 Display
+- LilyGO T-Display Style Boards
+- ST7789 135×240 LCD
 
 ### Display Connections
 
@@ -69,11 +94,11 @@ This project displays nearby aircraft in either a traditional list view or a rad
 #define TFT_BL     4
 ```
 
-### Buttons
+### Controls
 
 ```cpp
-#define BTN_MODE   35
-#define BTN_SCREEN 0
+#define BTN_MODE    35
+#define BTN_SCREEN   0
 ```
 
 ---
@@ -107,28 +132,54 @@ Long Press
 Deep Sleep Mode
 ```
 
-Press the button again to wake the device.
+Press again to wake the device.
 
 ---
 
-## Radar Colors
+## Radar Color Legend
 
 ### Green
 
 ```text
-Below 5,000 ft
+Aircraft below 5,000 ft
 ```
 
 ### Yellow
 
 ```text
-5,000 - 20,000 ft
+Aircraft between 5,000 ft and 20,000 ft
 ```
 
 ### Red
 
 ```text
-Above 20,000 ft
+Aircraft above 20,000 ft
+```
+
+---
+
+## Aircraft Information
+
+Each aircraft can display:
+
+```text
+Callsign
+Distance
+Altitude
+Ground Speed
+Heading
+Flight Direction
+Trail History
+```
+
+Example:
+
+```text
+AAL943
+4.2 mi
+12,049 ft
+287 mph
+NW 312°
 ```
 
 ---
@@ -138,92 +189,127 @@ Above 20,000 ft
 ```text
 FlightRadar.ino
 │
-├── Main loop
 ├── Wi-Fi
-├── Battery
-├── Buttons
-└── Power management
+├── OpenSky Authentication
+├── Update Scheduler
+├── Button Handling
+├── Battery Management
+└── Power Management
 
 AircraftData.h
 │
-├── OpenSky API
-├── JSON parsing
-├── Distance calculations
-├── Bearing calculations
-├── Aircraft storage
-└── Trail history
+├── Aircraft Storage
+├── Trail History
+├── Distance Calculations
+├── Bearing Calculations
+├── Sorting Logic
+└── OpenSky Data Retrieval
 
 DisplayUI.h
 │
-├── Radar rendering
-├── List rendering
-├── Aircraft symbols
-├── Progress bar
-├── Battery icon
-└── User interface
+├── Radar Rendering
+├── List Rendering
+├── Aircraft Vector Rendering
+├── Battery Indicator
+├── Progress Indicator
+└── Display Helpers
 ```
 
 ---
 
-## OpenSky API
+## Polling Strategy
 
-This project uses the OpenSky Network REST API to retrieve live aircraft state vectors.
+Default update interval:
 
-OpenSky:
+```text
+30 seconds
+```
+
+Recommended for continuous operation and OpenSky API credit conservation.
+
+Development mode:
+
+```text
+10 seconds
+```
+
+Useful for testing and debugging radar features.
+
+---
+
+## OpenSky Integration
+
+The project retrieves aircraft state vectors from OpenSky Network and supports OAuth2 client credentials authentication.
+
+Information displayed includes:
+
+- Callsign
+- Latitude / Longitude
+- Bearing
+- Altitude
+- Speed
+- Track Heading
+
+OpenSky Network:
+
 https://opensky-network.org/
 
-Please respect OpenSky's rate limits when changing update intervals.
+---
+
+## Flight Trail System
+
+Aircraft movement trails are preserved between updates and displayed directly on the radar scope.
+
+Trail history allows visual tracking of:
+
+- Aircraft direction
+- Relative movement
+- Traffic patterns
+- Nearby approaches and departures
 
 ---
 
-## Future Enhancements
+## Future Improvements
 
-Planned ideas include:
+Potential future features include:
 
-- Aircraft type lookup
+- Aircraft type lookups
+- Tail number lookup
 - Airport overlays
+- DFW/DAL markers
 - Multiple radar ranges
-- Aircraft detail screen
 - Weather overlays
-- GPS-based location
-- BLE aircraft alerts
+- GPS-based mobile operation
 - SD card logging
 - Historical playback
+- Aircraft detail screens
 
 ---
 
-## Screens
+## Building
 
-### List View
+### Arduino IDE
+
+Board:
 
 ```text
-FLIGHTS
-
-AAL943
-4.1mi
-12049ft
-287mph NW
-
-DAL1034
-5.4mi
-9200ft
-210mph S
+ESP32 Dev Module
 ```
 
-### Radar View
+Recommended settings:
 
 ```text
-RADAR
+CPU Frequency: 240 MHz
+Flash Frequency: 80 MHz
+Partition Scheme: Default 4MB with SPIFFS
+```
 
-         N
+Required libraries:
 
-      ✈
-
-W          E
-
-   ✈    ✈
-
-         S
+```text
+ArduinoJson
+Adafruit GFX
+Adafruit ST7789
 ```
 
 ---
@@ -234,4 +320,8 @@ MIT License
 
 Copyright (c) 2026 Christian Brannon
 
-See LICENSE file for details.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files to deal in the Software
+without restriction, including without limitation the rights to use, copy,
+modify, merge, publish, distribute, sublicense, and/or sell copies of the
+Software.
