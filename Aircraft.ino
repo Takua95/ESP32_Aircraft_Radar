@@ -771,14 +771,14 @@ void drawListScreen()
         DARKGREY);
 
     drawText(
-        "MODE",
+        "DIM/SLP",
         5,
         228,
         DARKGREY,
         1);
 
     drawText(
-        "DIM/SLP",
+        "MODE",
         90,
         228,
         DARKGREY,
@@ -1131,14 +1131,14 @@ void drawRadarScreen()
         DARKGREY);
 
     drawText(
-        "MODE",
+        "DIM/SLP",
         5,
         228,
         DARKGREY,
         1);
 
     drawText(
-        "DIM/SLP",
+        "MODE",
         90,
         228,
         DARKGREY,
