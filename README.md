@@ -314,6 +314,12 @@ Adafruit ST7789
 
 ---
 
+## Documentation
+
+Additional hardware and development notes:
+
+- [Tenstar ESP32 Reference](docs/TENSTAR-ESP32-REFERENCE.md)
+
 ## License
 
 MIT License
